@@ -11,7 +11,9 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
-  Hospital
+  Hospital,
+  Menu,
+  X
 } from 'lucide-react';
 
 export type TabType = 'SERVICE' | 'MOD' | 'FIUME_SANTO' | 'CARBOTERMO' | 'PRODUZIONE' | 'PROMEMORIA';
@@ -23,6 +25,7 @@ interface SidebarERPProps {
 
 export default function SidebarERP({ activeTab, setActiveTab }: SidebarERPProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const menuItems: { id: TabType; label: string; icon: React.ElementType }[] = [
     { id: 'SERVICE', label: 'Service / Contratti', icon: Wrench },
@@ -33,89 +36,109 @@ export default function SidebarERP({ activeTab, setActiveTab }: SidebarERPProps)
     { id: 'PROMEMORIA', label: 'Attività & Note', icon: StickyNote },
   ];
 
-  return (
-    <aside
-      className={`${
-        isCollapsed ? 'w-16' : 'w-60'
-      } bg-[#2D3748] text-slate-200 flex flex-col min-h-screen shrink-0 border-r border-[#1A202C] transition-all duration-200 ease-in-out`}
-    >
-      {/* Header Logo + Pulsante Contrazione */}
-      <div className="h-14 bg-[#1A202C] px-3 flex items-center justify-between border-b border-slate-700">
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="w-7 h-7 bg-[#2B6CB0] rounded flex items-center justify-center font-bold text-white text-xs shrink-0">
-            IS
+  const content = (
+    <div className="flex flex-col h-full justify-between">
+      <div>
+        {/* Header Logo */}
+        <div className="h-16 bg-slate-900 px-4 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-extrabold text-white text-xs shadow-md">
+              IS
+            </div>
+            {(!isCollapsed || isMobileOpen) && (
+              <span className="font-bold text-base text-white tracking-wide truncate">
+                Ispera ERP
+              </span>
+            )}
           </div>
-          {!isCollapsed && (
-            <span className="font-bold text-sm text-white tracking-wide uppercase truncate">
-              Ispera ERP
-            </span>
-          )}
+
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden md:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
+        {/* Menu Voci */}
+        <div className="p-3 space-y-1">
+          {(!isCollapsed || isMobileOpen) && (
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 block mb-2">
+              Gestione Commesse
+            </span>
+          )}
+
+          <nav className="space-y-1">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileOpen(false);
+                  }}
+                  className={`w-full flex items-center ${
+                    isCollapsed && !isMobileOpen ? 'justify-center px-2' : 'px-3.5'
+                  } py-2.5 text-xs font-semibold rounded-xl transition-all duration-150 ${
+                    isActive
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {(!isCollapsed || isMobileOpen) && <span className="ml-3 truncate">{item.label}</span>}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Footer Settings */}
+      <div className="p-3 border-t border-slate-800 space-y-1 text-xs text-slate-400">
+        <button className={`w-full flex items-center ${isCollapsed && !isMobileOpen ? 'justify-center' : 'px-3'} py-2 hover:text-white transition-colors`}>
+          <Settings className="w-4 h-4 shrink-0" />
+          {(!isCollapsed || isMobileOpen) && <span className="ml-3 truncate">Impostazioni</span>}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Tasto Menu visibile solo su Tablet/Mobile */}
+      <div className="md:hidden fixed top-3 left-3 z-40">
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
-          title={isCollapsed ? 'Espandi Sidebar' : 'Riduci Sidebar'}
+          onClick={() => setIsMobileOpen(true)}
+          className="p-2.5 bg-slate-900 text-white rounded-xl shadow-lg border border-slate-800"
         >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Menu Voci */}
-      <div className="p-2 space-y-1">
-        {!isCollapsed && (
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 block mb-2 transition-opacity">
-            Gestione Commesse
-          </span>
-        )}
+      {/* Sidebar Desktop */}
+      <aside className={`hidden md:flex flex-col bg-slate-900 text-slate-200 min-h-screen shrink-0 border-r border-slate-800 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+        {content}
+      </aside>
 
-        <nav className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center ${
-                  isCollapsed ? 'justify-center px-2' : 'px-3'
-                } py-2 text-xs font-semibold rounded transition-colors ${
-                  isActive
-                    ? 'bg-[#2B6CB0] text-white shadow-xs'
-                    : 'text-slate-300 hover:bg-slate-700/60 hover:text-white'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                {!isCollapsed && <span className="ml-2.5 truncate">{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Footer Info / Impostazioni */}
-      <div className="mt-auto p-2 border-t border-slate-700 space-y-1 text-[11px] text-slate-400">
-        <button
-          title={isCollapsed ? 'Impostazioni' : undefined}
-          className={`w-full flex items-center ${
-            isCollapsed ? 'justify-center px-2' : 'px-3'
-          } py-1.5 hover:text-white transition-colors`}
-        >
-          <Settings className="w-3.5 h-3.5 shrink-0" />
-          {!isCollapsed && <span className="ml-2.5 truncate">Impostazioni</span>}
-        </button>
-
-        <button
-          title={isCollapsed ? 'Assistenza' : undefined}
-          className={`w-full flex items-center ${
-            isCollapsed ? 'justify-center px-2' : 'px-3'
-          } py-1.5 hover:text-white transition-colors`}
-        >
-          <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-          {!isCollapsed && <span className="ml-2.5 truncate">Assistenza</span>}
-        </button>
-      </div>
-    </aside>
+      {/* Sidebar Off-canvas per iPad / Mobile */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setIsMobileOpen(false)} />
+          <aside className="relative w-72 bg-slate-900 text-slate-200 h-full shadow-2xl z-10">
+            {content}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
